@@ -56,7 +56,9 @@ test('check-lane.sh: passes the exit code through and keeps a log', () => {
   const bad = sh(S('bin/check-lane.sh'), ['demo', '--', 'sh', '-c', 'echo oops; exit 3'], { cwd: dir, env });
   assert.equal(bad.status, 3);
   assert.match(bad.stdout + bad.stderr, /oops/);
-  assert.equal(readdirSync(join(dir, '.agent-harness', 'lane', 'jobs')).length, 0);
+  // The gate is skipped when CI is set, so the jobs folder may not exist there.
+  const jobs = join(dir, '.agent-harness', 'lane', 'jobs');
+  assert.equal(existsSync(jobs) ? readdirSync(jobs).length : 0, 0);
 });
 
 test('check-lane.sh: a usage error exits 2', () => {
