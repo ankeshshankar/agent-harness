@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -211,4 +211,13 @@ test('the config documents every harness key the scripts read', () => {
     const sp = path.flatMap((k, i) => (i === 0 ? ['properties', k] : ['properties', k]));
     assert.ok(at(schema, sp)?.description || at(schema, sp)?.type, `schema lacks ${key}`);
   }
+});
+
+test('the installer runs when started through a symlink, as npx does', () => {
+  const d = temp();
+  const link = join(temp(), 'agent-harness');
+  symlinkSync(BIN, link);
+  const r = spawnSync(process.execPath, [link, 'init', d, '--dry-run'], { encoding: 'utf8', timeout: 60000 });
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  assert.match(r.stdout, /would create/);
 });

@@ -9,7 +9,7 @@
 // Flags (update): --dry-run  --force
 // Exit codes: 0 ok, 1 a check failed, 2 bad arguments or a write error.
 import { createHash } from 'node:crypto';
-import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -340,7 +340,15 @@ function doctor(o) {
 
 // ---------------------------------------------------------------- main
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+// npx and npm run the bin through a symlink, so compare real paths.
+const real = (p) => {
+  try {
+    return realpathSync(p);
+  } catch {
+    return resolve(p);
+  }
+};
+if (process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.url))) {
   const argv = process.argv.slice(2);
   if (!argv.length || argv[0] === '-h' || argv[0] === '--help') {
     out(USAGE);
