@@ -1,0 +1,40 @@
+---
+description: "The feature flow, who may do what, and the human gates."
+alwaysApply: true
+---
+
+<!-- generated from .agents/playbook/10-flow.md — do not edit. Edit the source, then run: node scripts/sync-agents.mjs -->
+
+# The flow
+
+One feature, seven artifacts. Do not collapse the steps.
+
+| #   | Step        | Who             | Artifact                                  |
+| --- | ----------- | --------------- | ----------------------------------------- |
+| 1   | Scope       | planner         | `docs/plans/<task>.md`               |
+| 2   | Unknowns    | researcher      | `docs/research/<topic>.md`           |
+| 3   | Design      | spec-writer     | `docs/specs/<Feature>.md`, `status: draft` |
+| 3b  | Spec review | spec-reviewer   | READY or REVISE, per lens                 |
+| 4   | **Approve** | **human**       | flips `draft` to `approved`               |
+| 5   | Build       | builder         | code and tests, one packet per session    |
+| 6   | Judge       | code-reviewer   | PROCEED or ITERATE, PASS/FAIL/CANNOT-VERIFY per criterion |
+| 7   | Check       | **human**       | `docs/verification/<feature>.md`     |
+
+## Gates
+
+- A human sets `status: approved`. That edit is the review record. The builder refuses to start before it and never sets the field. The same shape applies to plans, research and contracts.
+- Step 7 is a human gate: everything an agent cannot prove goes on that list.
+- Every artifact carries `author`, `model` and `date` in its frontmatter.
+
+## Who may do what
+
+- planner, spec-writer, spec-reviewer, code-reviewer and researcher are `readonly`: they write a report or a draft, never source files.
+- builder, release-manager and dependency-manager are `write`.
+- Only the dependency-manager edits dependency manifests and lock files. Only the release-manager edits release and deploy configuration.
+- No role dispatches another role. The orchestrator (the main chat, or `scripts/agents/run-packet.sh`) dispatches. A role that can dispatch its own reviewer can approve its own work.
+- Review is always fresh context: the reviewer never sees the builder's reasoning, only the diff, the report claims and the checks.
+
+## Budgets
+
+- 3 build-and-review rounds per packet (the build plus 2 fixes). A third ITERATE stops the feature and goes to the human with the findings and a recommendation.
+- One packet per fresh session. A fix round is a new builder session, never a resumed one.

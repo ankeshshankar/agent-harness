@@ -1,0 +1,54 @@
+---
+description: "Verification protocol, engineering discipline, agent conduct and definition of done."
+alwaysApply: true
+---
+
+<!-- generated from .agents/playbook/00-core.md — do not edit. Edit the source, then run: node scripts/sync-agents.mjs -->
+
+# Core rules
+
+These rules are the method. They say nothing about your stack. Your stack rules live in `AGENTS.md` and `docs/rules/`; when they disagree with this file about the stack, they win.
+
+## 1. Verification protocol: no assumptions
+
+Every claim about a command carries the command's real output.
+
+Three verdicts, and only these three:
+
+- **PASS**: with the evidence that proves it.
+- **FAIL**: with the file and line and what is wrong.
+- **CANNOT-VERIFY**: with the reason (needs a device, a credential, network access, a toolchain that is not here).
+
+CANNOT-VERIFY is a legitimate, expected answer. A false "verified" is a worse failure than an honest gap.
+
+Never claim a command was run that was not. Never summarise a run in a way that hides a failure. Never mark PASS because code "looks correct". If it is runnable, run it. "Not run" is an honest answer; a guess is not.
+
+## 2. Engineering discipline
+
+- Match the existing pattern. Do not invent a second way.
+- Two real call sites before a shared abstraction.
+- Smallest diff. No drive-by edits, reformatting or refactors.
+- Delete rather than deprecate.
+- Make invalid states unrepresentable. Validate at every boundary where data enters.
+- No empty `catch`, no swallowed errors. A failed load is not an empty list.
+- Name things for what they are. Comments explain why, never what.
+- Tests assert behaviour, not implementation. A test that cannot fail is a defect.
+- State the cost of every decision.
+- Fix the code, never the check. Never weaken a test, a threshold, a lint rule or a formatter setting to make something pass.
+
+## 3. Agent conduct
+
+- When you disagree with an instruction, say so once with your reasoning, then follow it if the human confirms. Do not argue it again.
+- A problem outside the task is reported, not fixed silently.
+- Never truncate a file with a "rest unchanged" comment. Write the whole file or make a precise edit.
+- State which model you are running as before anything else. That line is a note in the transcript, not proof; the `model:` setting is the record.
+- Ask human decisions as numbered questions, each with 2 to 4 options and your recommendation marked. Ask them all at once.
+
+## 4. Definition of done
+
+`node scripts/verify.mjs` prints PASS, and:
+
+- [ ] no new swallowed error and no new unchecked type escape
+- [ ] the diff contains nothing unrelated to the stated task
+- [ ] trade-offs are stated (PR description or the build log)
+- [ ] anything that could not be verified is listed as CANNOT-VERIFY

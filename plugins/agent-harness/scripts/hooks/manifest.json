@@ -1,0 +1,96 @@
+{
+  "$comment": "Single description of the harness hooks. Lane C turns `hooks` into the plugin hooks/hooks.json and into project-level settings. `script` is relative to the repo root (the plugin root once assembled); run it with node, passing `args`. `default` is the state a fresh install gets. `blocking` is true when the script can exit 2 or deny. Every script fails open and has an off switch (`disable`). `commands` are not hooks: they are run by hand or by the agents.",
+  "version": 1,
+  "hooks": [
+    {
+      "id": "guard-command",
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "scripts/hooks/guard-command.mjs",
+      "args": ["--format", "claude"],
+      "timeout": 5,
+      "blocking": true,
+      "default": "on",
+      "disable": "AGENT_HARNESS_GUARD=off",
+      "description": "Denies clearly destructive shell commands (force push to the default branch, rm -r of the repo root or home, reset --hard on a dirty tree, publish and deploy) plus your own rules from agents.config.json."
+    },
+    {
+      "id": "read-guard",
+      "event": "PreToolUse",
+      "matcher": "Read",
+      "script": "scripts/hooks/read-guard.mjs",
+      "timeout": 5,
+      "blocking": true,
+      "default": "on",
+      "disable": "AGENT_HARNESS_READ_GUARD=off",
+      "description": "Blocks a whole Read of a text file over 40 KB and tells the agent to grep and read a line range instead."
+    },
+    {
+      "id": "context-guard",
+      "event": "UserPromptSubmit",
+      "script": "scripts/hooks/context-guard.mjs",
+      "timeout": 5,
+      "blocking": false,
+      "default": "on",
+      "disable": "AGENT_HARNESS_CONTEXT_GUARD=off",
+      "description": "Adds one reminder to save progress to the state file and build log when session context passes 150k tokens."
+    },
+    {
+      "id": "monitor-allow",
+      "event": "PreToolUse",
+      "matcher": "Monitor",
+      "script": "scripts/hooks/monitor-allow.mjs",
+      "timeout": 5,
+      "blocking": false,
+      "default": "off",
+      "disable": "AGENT_HARNESS_MONITOR_ALLOW=off",
+      "description": "Auto-approves Monitor watches whose command is provably read-only. Never denies. Off by default because it changes permission prompts."
+    },
+    {
+      "id": "heavy-gate-pre",
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "script": "scripts/hooks/heavy-gate.mjs",
+      "args": ["pre"],
+      "timeout": 1500,
+      "blocking": false,
+      "default": "off",
+      "disable": "AGENT_HARNESS_HEAVY_GATE=off",
+      "description": "Makes whole-repo jobs (full verify, typecheck, native builds) take turns, and waits while memory pressure is critical. Only delays; never denies."
+    },
+    {
+      "id": "heavy-gate-post",
+      "event": "PostToolUse",
+      "matcher": "Bash",
+      "script": "scripts/hooks/heavy-gate.mjs",
+      "args": ["post"],
+      "timeout": 10,
+      "blocking": false,
+      "default": "off",
+      "disable": "AGENT_HARNESS_HEAVY_GATE=off",
+      "description": "Releases the lane entry that heavy-gate-pre registered. Enable both heavy-gate hooks together."
+    },
+    {
+      "id": "packet-runner",
+      "event": "SessionStart",
+      "script": "scripts/hooks/packet-runner.mjs",
+      "timeout": 10,
+      "blocking": false,
+      "default": "off",
+      "disable": "AGENT_HARNESS_QUEUE_HOOK=off",
+      "description": "Reports finished packet runs and starts the next queued packet in a detached headless session. Off by default because it starts agent runs."
+    }
+  ],
+  "commands": [
+    { "id": "run-packet", "script": "scripts/agents/run-packet.sh", "description": "Run one packet in a fresh headless session (optionally in a git worktree)." },
+    { "id": "packet-slice", "script": "scripts/agents/packet-slice.mjs", "description": "Cut one packet's brief and spec into a small slice file; check slices are current." },
+    { "id": "log-round", "script": "scripts/agents/log-round.mjs", "description": "Write or read one packet's row and round entry in a build log." },
+    { "id": "queue-brief", "script": "scripts/agents/queue-brief.mjs", "description": "Queue every packet of a brief with its dependencies." },
+    { "id": "self-check", "script": "scripts/agents/self-check.mjs", "description": "Cheap mechanical check of just-edited files." },
+    { "id": "clean-worktrees", "script": "scripts/agents/clean-worktrees.sh", "description": "Remove finished packet worktrees (branches are kept)." },
+    { "id": "config-get", "script": "scripts/agents/config-get.mjs", "description": "Print one value of agents.config.json for shell scripts." },
+    { "id": "status-delta", "script": "scripts/hooks/status-delta.mjs", "description": "Print only the rows of a markdown status file that changed since the last run." },
+    { "id": "check-lane", "script": "scripts/bin/check-lane.sh", "description": "Run one whole-repo job in the shared one-at-a-time lane." },
+    { "id": "ram-ok", "script": "scripts/bin/ram-ok.sh", "description": "Print OK or WAIT from the OS memory pressure level." }
+  ]
+}

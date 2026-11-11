@@ -1,0 +1,17 @@
+{
+  "name": "agent-harness",
+  "version": "0.1.0",
+  "description": "A spec, build, review, verify workflow for coding agents: eight roles, nine skills, three safety hooks and packet scripts. Run /agent-harness:init to scaffold the project files.",
+  "author": {
+    "name": "Ankesh Kumar"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/ankeshshankar/agent-harness",
+  "keywords": [
+    "agents",
+    "workflow",
+    "spec",
+    "review",
+    "verification"
+  ]
+}

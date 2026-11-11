@@ -1,0 +1,44 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }}, node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [20, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Git identity for tests that make commits
+        run: |
+          git config --global user.email "ci@example.invalid"
+          git config --global user.name "ci"
+          git config --global init.defaultBranch main
+      - name: Tests
+        run: npm test
+        env:
+          CI: "true"
+          TZ: UTC
+      - name: Generated agent files are current
+        run: npm run sync:check
+      - name: Plugin folder is current
+        run: node scripts/build-plugin.mjs --check
+      - name: Shell scripts parse
+        run: |
+          for f in scripts/agents/*.sh scripts/bin/*.sh; do
+            echo "bash -n $f"
+            bash -n "$f"
+          done

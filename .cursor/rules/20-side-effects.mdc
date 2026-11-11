@@ -1,0 +1,29 @@
+---
+description: "Commands that need a human to confirm, and git safety rules."
+alwaysApply: true
+---
+
+<!-- generated from .agents/playbook/20-side-effects.md — do not edit. Edit the source, then run: node scripts/sync-agents.mjs -->
+
+# Commands with side effects outside this working tree
+
+No role, in any mode, runs one of these without explicit human confirmation in the same turn. A confirmation for a similar command earlier is not confirmation for this one.
+
+```
+git push                          any publish command (npm publish, docker push, ...)
+any deploy or release command     any database migration against a shared environment
+any command that changes credentials, tokens or secrets
+any command that writes to a remote or shared system
+```
+
+Your project can extend this list in `AGENTS.md` under "Your project's rules". Hooks (see `scripts/hooks/`) can enforce it.
+
+`readonly` withholds file-editing tools, not the shell. A readonly role will not edit; it can still run commands, so it must follow this list too.
+
+## Git safety
+
+- Never run `git checkout`, `git restore`, `git reset` or `git stash` on a file. The working tree often holds reviewed, unpushed work.
+- To take a baseline without touching the tree: `git stash create` (it writes a commit object and changes nothing). Never plain `git stash`.
+- Builders never run `git add`, `git commit`, `git push`, `git stash`, `git checkout`, `git restore` or `git reset`.
+- Commit messages are one short lowercase subject line. No generated attribution.
+- Do not commit local-only files: `.env`, credentials, agent scratch output, `.agent-harness/`.

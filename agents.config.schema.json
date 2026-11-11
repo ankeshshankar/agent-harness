@@ -1,0 +1,528 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "agent-harness config",
+  "type": "object",
+  "required": [
+    "project",
+    "targets",
+    "models"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "rolePrefix": {
+      "type": "string",
+      "pattern": "^([a-z0-9]+(-[a-z0-9]+)*-)?$",
+      "description": "Prepended to every generated role name, for example \"acme-\"."
+    },
+    "packageManager": {
+      "type": "string",
+      "enum": [
+        "npm",
+        "pnpm",
+        "yarn",
+        "bun",
+        "none"
+      ]
+    },
+    "defaultBranch": {
+      "type": "string"
+    },
+    "commands": {
+      "type": "object",
+      "properties": {
+        "lint": {
+          "type": "string"
+        },
+        "typecheck": {
+          "type": "string"
+        },
+        "test": {
+          "type": "string"
+        },
+        "verify": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "paths": {
+      "type": "object",
+      "properties": {
+        "specs": {
+          "type": "string"
+        },
+        "plans": {
+          "type": "string"
+        },
+        "research": {
+          "type": "string"
+        },
+        "handoff": {
+          "type": "string"
+        },
+        "verification": {
+          "type": "string"
+        },
+        "upstreamRequests": {
+          "type": "string"
+        },
+        "templates": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "string"
+        },
+        "reports": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "roleFooter": {
+      "type": "string"
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "tiers": {
+            "type": "object",
+            "propertyNames": {
+              "enum": [
+                "light",
+                "standard",
+                "reasoning"
+              ]
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "roles": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "efforts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "targets": {
+      "type": "object",
+      "properties": {
+        "claude": {
+          "$ref": "#/definitions/target"
+        },
+        "cursor": {
+          "$ref": "#/definitions/target"
+        },
+        "codex": {
+          "$ref": "#/definitions/target"
+        },
+        "plugin": {
+          "$ref": "#/definitions/target"
+        }
+      },
+      "additionalProperties": false
+    },
+    "harness": {
+      "type": "object",
+      "description": "Settings read by the scripts in scripts/agents, scripts/hooks and scripts/bin. Every key is optional; the value shown in agents.config.json is the default the scripts use. See scripts/hooks/README.md.",
+      "properties": {
+        "stateDir": {
+          "type": "string",
+          "description": "Folder for local state, logs and worktrees, relative to the project. Git-ignored. Default .agent-harness. Env AGENT_HARNESS_STATE overrides it."
+        },
+        "queueFile": {
+          "type": "string",
+          "description": "Packet queue file, relative to the project. Default <stateDir>/queue.txt. It does not follow stateDir when set here."
+        },
+        "runPacket": {
+          "type": "string",
+          "description": "Script the packet-runner hook starts for each queued packet. Default scripts/agents/run-packet.sh."
+        },
+        "headless": {
+          "type": "object",
+          "description": "The agent CLI run-packet.sh starts.",
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "CLI to run. Default claude. Env AGENT_HARNESS_HEADLESS_CMD overrides it."
+            },
+            "model": {
+              "type": "string",
+              "description": "Model passed to the CLI. Empty means the CLI default."
+            },
+            "effort": {
+              "type": "string",
+              "description": "Effort passed to the CLI. Empty means the CLI default."
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Extra arguments passed to the CLI, one per item."
+            }
+          },
+          "additionalProperties": false
+        },
+        "worktree": {
+          "type": "object",
+          "description": "Git worktrees for run-packet.sh --worktree.",
+          "properties": {
+            "dir": {
+              "type": "string",
+              "description": "Folder for packet worktrees. Default <stateDir>/worktrees."
+            },
+            "copy": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Paths copied from the project into a new worktree (agent setup that is not tracked by git)."
+            },
+            "install": {
+              "type": "string",
+              "description": "Install command run in a new worktree. Empty means choose from packageManager (npm ci, pnpm install --frozen-lockfile, and so on)."
+            }
+          },
+          "additionalProperties": false
+        },
+        "roles": {
+          "type": "object",
+          "description": "Agent names run-packet.sh asks the headless session to use. Default is rolePrefix plus builder / code-reviewer.",
+          "properties": {
+            "builder": {
+              "type": "string",
+              "description": "Builder agent name."
+            },
+            "reviewer": {
+              "type": "string",
+              "description": "Reviewer agent name."
+            }
+          },
+          "additionalProperties": false
+        },
+        "queue": {
+          "type": "object",
+          "description": "The packet-runner hook.",
+          "properties": {
+            "maxConcurrent": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4,
+              "description": "Packets run at once. Default 1, at most 4."
+            },
+            "pauseOnFailure": {
+              "type": "boolean",
+              "description": "A failed packet pauses the queue until packet-runner.mjs --resume. Default true."
+            }
+          },
+          "additionalProperties": false
+        },
+        "guard": {
+          "type": "object",
+          "description": "The guard-command hook (blocks destructive shell commands).",
+          "properties": {
+            "defaults": {
+              "type": "boolean",
+              "description": "Use the built-in rules. Default true."
+            },
+            "deny": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "pattern"
+                    ],
+                    "properties": {
+                      "pattern": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "description": "Commands to deny: a regex, or {pattern, reason}."
+            },
+            "ask": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "pattern"
+                    ],
+                    "properties": {
+                      "pattern": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "description": "Commands that need confirmation: a regex, or {pattern, reason}."
+            },
+            "allow": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Regexes for commands that are always allowed. Checked first."
+            }
+          },
+          "additionalProperties": false
+        },
+        "readGuard": {
+          "type": "object",
+          "description": "The read-guard hook (blocks a whole read of a big file).",
+          "properties": {
+            "maxBytes": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Largest text file read whole, in bytes. Default 40960. Env AGENT_HARNESS_READ_MAX_BYTES overrides it."
+            },
+            "allowExtensions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Extra file extensions that are never blocked."
+            },
+            "allowPaths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Regexes for paths that are never blocked."
+            }
+          },
+          "additionalProperties": false
+        },
+        "contextGuard": {
+          "type": "object",
+          "description": "The context-guard hook (one reminder to save progress).",
+          "properties": {
+            "tokens": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Context size that triggers the first reminder. Default 150000. Env AGENT_HARNESS_CONTEXT_TOKENS overrides it."
+            },
+            "step": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Extra tokens between further reminders. Default 100000."
+            },
+            "message": {
+              "type": "string",
+              "description": "Reminder text. {k} becomes the size in thousands of tokens."
+            }
+          },
+          "additionalProperties": false
+        },
+        "heavy": {
+          "type": "object",
+          "description": "The heavy-gate hooks (whole-repo jobs take turns).",
+          "properties": {
+            "lane": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Extra regexes for commands that count as whole-repo jobs."
+            },
+            "narrow": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Extra regexes for commands that are narrow and never wait."
+            },
+            "maxWaitSeconds": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Longest total wait before a job runs anyway. Default 1200."
+            },
+            "criticalAloneSeconds": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Wait while memory pressure is critical and no other job runs. Default 300."
+            }
+          },
+          "additionalProperties": false
+        },
+        "monitorAllow": {
+          "type": "object",
+          "description": "The monitor-allow hook.",
+          "properties": {
+            "commands": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Extra command names treated as read-only."
+            }
+          },
+          "additionalProperties": false
+        },
+        "selfCheck": {
+          "type": "object",
+          "description": "scripts/agents/self-check.mjs.",
+          "properties": {
+            "defaults": {
+              "type": "boolean",
+              "description": "Use the built-in rules. Default true."
+            },
+            "rules": {
+              "type": "array",
+              "description": "Extra rules.",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "pattern"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "pattern": {
+                    "type": "string"
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "FAIL",
+                      "WARN"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "extensions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Extensions the rule applies to."
+                  },
+                  "raw": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "format": {
+              "type": "string",
+              "description": "A format-check command; {files} is replaced by the edited files. Empty means none."
+            }
+          },
+          "additionalProperties": false
+        },
+        "packetSlice": {
+          "type": "object",
+          "description": "scripts/agents/packet-slice.mjs.",
+          "properties": {
+            "budgetTokens": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Largest slice in tokens (characters / 4), not counting the AMENDMENTS section. Default 12000."
+            }
+          },
+          "additionalProperties": false
+        },
+        "buildLog": {
+          "type": "object",
+          "description": "scripts/agents/log-round.mjs.",
+          "properties": {
+            "columns": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Rename a column the script writes, for example {\"verdict\": \"Result\"}. Keys: base, builder, rounds, gate, verdict, findings, hard-rule, scope, honest, notes."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "definitions": {
+    "target": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "dir"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "dir": {
+          "type": "string"
+        },
+        "rolePrefix": {
+          "type": "string"
+        },
+        "roleNames": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "skills": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

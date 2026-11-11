@@ -1,0 +1,160 @@
+{
+  "$schema": "./agents.config.schema.json",
+  "project": {
+    "name": "my-project"
+  },
+  "rolePrefix": "",
+  "packageManager": "npm",
+  "defaultBranch": "main",
+  "commands": {
+    "lint": "",
+    "typecheck": "",
+    "test": "node --test tests/*/*.test.mjs",
+    "verify": "node scripts/sync-agents.mjs --check && node scripts/build-plugin.mjs --check"
+  },
+  "paths": {
+    "specs": "docs/specs",
+    "plans": "docs/plans",
+    "research": "docs/research",
+    "handoff": "docs/handoff",
+    "verification": "docs/verification",
+    "upstreamRequests": "docs/upstream-requests",
+    "templates": "docs/templates",
+    "rules": "docs/rules",
+    "reports": ".agent-harness/reports",
+    "state": "STATE.md"
+  },
+  "roleFooter": ".agents/playbook/role-footer.md",
+  "models": {
+    "claude": {
+      "tiers": {
+        "light": "haiku",
+        "standard": "sonnet",
+        "reasoning": "opus"
+      },
+      "roles": {},
+      "efforts": {}
+    },
+    "cursor": {
+      "tiers": {
+        "light": "inherit",
+        "standard": "inherit",
+        "reasoning": "inherit"
+      },
+      "roles": {},
+      "efforts": {}
+    },
+    "codex": {
+      "tiers": {},
+      "roles": {},
+      "efforts": {
+        "*": "high"
+      }
+    },
+    "plugin": {
+      "tiers": {
+        "light": "haiku",
+        "standard": "sonnet",
+        "reasoning": "opus"
+      },
+      "roles": {},
+      "efforts": {}
+    }
+  },
+  "targets": {
+    "claude": {
+      "enabled": true,
+      "dir": ".claude",
+      "roleNames": {},
+      "skills": true
+    },
+    "cursor": {
+      "enabled": true,
+      "dir": ".cursor",
+      "roleNames": {},
+      "skills": false
+    },
+    "codex": {
+      "enabled": true,
+      "dir": ".codex",
+      "roleNames": {},
+      "skills": false
+    },
+    "plugin": {
+      "enabled": true,
+      "dir": "plugins/agent-harness",
+      "rolePrefix": "",
+      "roleNames": {},
+      "skills": true
+    }
+  },
+  "harness": {
+    "stateDir": ".agent-harness",
+    "queueFile": ".agent-harness/queue.txt",
+    "runPacket": "scripts/agents/run-packet.sh",
+    "headless": {
+      "command": "claude",
+      "model": "",
+      "effort": "",
+      "args": []
+    },
+    "worktree": {
+      "dir": ".agent-harness/worktrees",
+      "copy": [
+        ".agents",
+        ".claude",
+        ".cursor",
+        ".codex",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "agents.config.json",
+        "scripts"
+      ],
+      "install": ""
+    },
+    "roles": {
+      "builder": "builder",
+      "reviewer": "code-reviewer"
+    },
+    "queue": {
+      "maxConcurrent": 1,
+      "pauseOnFailure": true
+    },
+    "guard": {
+      "defaults": true,
+      "deny": [],
+      "ask": [],
+      "allow": []
+    },
+    "readGuard": {
+      "maxBytes": 40960,
+      "allowExtensions": [],
+      "allowPaths": []
+    },
+    "contextGuard": {
+      "tokens": 150000,
+      "step": 100000,
+      "message": "Context is ~{k}K tokens. Before it is compacted, bring the state file and the build log up to date (node scripts/agents/log-round.mjs) so nothing is lost. Then carry on with the request as normal: do not stop work or ask the user to start a new chat."
+    },
+    "heavy": {
+      "lane": [],
+      "narrow": [],
+      "maxWaitSeconds": 1200,
+      "criticalAloneSeconds": 300
+    },
+    "monitorAllow": {
+      "commands": []
+    },
+    "selfCheck": {
+      "defaults": true,
+      "rules": [],
+      "format": ""
+    },
+    "packetSlice": {
+      "budgetTokens": 12000
+    },
+    "buildLog": {
+      "columns": {}
+    }
+  }
+}

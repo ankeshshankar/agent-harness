@@ -1,0 +1,22 @@
+{
+  "name": "agent-harness",
+  "owner": {
+    "name": "Ankesh Kumar"
+  },
+  "metadata": {
+    "description": "The agent-harness plugin: a spec, build, review, verify workflow for coding agents."
+  },
+  "plugins": [
+    {
+      "name": "agent-harness",
+      "source": "./plugins/agent-harness",
+      "description": "Roles, skills, safety hooks and packet scripts for a spec, build, review, verify workflow.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Ankesh Kumar"
+      },
+      "license": "MIT",
+      "repository": "https://github.com/ankeshshankar/agent-harness"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+# agent-harness: local state, logs and worktrees
+.agent-harness/

@@ -1,0 +1,27 @@
+{
+  "name": "agent-harness",
+  "version": "0.1.0",
+  "description": "A spec, build, review, verify workflow for coding agents: roles, skills, hooks and packet scripts for Claude Code, Cursor and Codex.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Ankesh Kumar",
+  "repository": { "type": "git", "url": "git+https://github.com/ankeshshankar/agent-harness.git" },
+  "bin": { "agent-harness": "bin/agent-harness.mjs" },
+  "engines": { "node": ">=20" },
+  "files": [
+    "bin",
+    "plugins/agent-harness/template",
+    "plugins/agent-harness/.claude-plugin",
+    "plugins/agent-harness/hooks",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "test": "node --test tests/*/*.test.mjs",
+    "sync": "node scripts/sync-agents.mjs",
+    "sync:check": "node scripts/sync-agents.mjs --check",
+    "build:plugin": "node scripts/build-plugin.mjs",
+    "verify": "node scripts/verify.mjs"
+  }
+}
